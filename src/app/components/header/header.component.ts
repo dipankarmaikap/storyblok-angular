@@ -1,10 +1,9 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-header',
   imports: [RouterLink, RouterLinkActive],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="bg-slate-800 text-white px-8 py-4">
       <nav class="flex justify-between items-center max-w-7xl mx-auto">

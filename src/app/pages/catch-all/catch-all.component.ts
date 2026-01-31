@@ -1,11 +1,10 @@
-import { Component, ChangeDetectionStrategy, inject, computed, effect } from '@angular/core';
+import { Component, inject, computed, effect } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-catch-all',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-8 max-w-7xl mx-auto">
       <h1 class="text-slate-800 text-3xl font-bold mb-4">{{ pageTitle() }}</h1>
