@@ -8,9 +8,8 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { type SbBlokData } from '@storyblok/js';
+import { storyblokEditable, type SbBlokData } from '@storyblok/js';
 import { STORYBLOK_COMPONENTS, isComponentLoader } from './storyblok-components';
-import { StoryblokService } from './storyblok.service';
 
 /**
  * Directive that dynamically renders a Storyblok component based on the blok data.
@@ -47,7 +46,6 @@ import { StoryblokService } from './storyblok.service';
 })
 export class SbBlokDirective {
   private readonly viewContainerRef = inject(ViewContainerRef);
-  private readonly storyblok = inject(StoryblokService);
   private readonly components = inject(STORYBLOK_COMPONENTS, { optional: true });
 
   /** The Storyblok blok data to render */
@@ -125,7 +123,7 @@ export class SbBlokDirective {
     componentRef.setInput('blok', blok);
 
     // Apply storyblok editable attributes for Visual Editor
-    const editableAttrs = this.storyblok.getEditableAttributes(blok);
+    const editableAttrs = storyblokEditable(blok);
     const hostElement = componentRef.location.nativeElement as HTMLElement;
 
     if (editableAttrs['data-blok-c']) {

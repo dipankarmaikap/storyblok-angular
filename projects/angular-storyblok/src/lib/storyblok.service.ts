@@ -12,10 +12,8 @@ import {
   storyblokInit,
   apiPlugin,
   useStoryblokBridge,
-  storyblokEditable,
   type ISbStoryData,
   type StoryblokBridgeConfigV2,
-  type SbBlokData,
   ISbConfig,
 } from '@storyblok/js';
 import { StoryblokFeature } from './storyblok-components';
@@ -190,17 +188,6 @@ export class StoryblokService {
       return;
     }
     useStoryblokBridge(storyId, callback, options);
-  }
-
-  /**
-   * Get editable attributes for a blok (for Visual Editor integration).
-   * These attributes enable click-to-edit functionality in the Visual Editor.
-   *
-   * @param blok - The blok data from the API
-   * @returns Object with data-blok-c and data-blok-uid attributes
-   */
-  getEditableAttributes(blok: SbBlokData): ReturnType<typeof storyblokEditable> {
-    return storyblokEditable(blok);
   }
 }
 
