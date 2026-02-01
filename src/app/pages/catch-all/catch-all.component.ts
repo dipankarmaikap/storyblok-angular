@@ -1,37 +1,54 @@
-import { Component, inject, computed, effect } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  computed,
+  OnInit,
+  input,
+  linkedSignal,
+} from '@angular/core';
+import {
+  type ISbStoryData,
+  type SbBlokData,
+  StoryblokService,
+  SbBlokDirective,
+} from 'angular-storyblok';
 
 @Component({
   selector: 'app-catch-all',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [SbBlokDirective],
   template: `
     <div class="p-8 max-w-7xl mx-auto">
-      <h1 class="text-slate-800 text-3xl font-bold mb-4">{{ pageTitle() }}</h1>
-      <p class="text-slate-600">Current path: /{{ currentPath() }}</p>
+      @if (storyContent(); as content) {
+        <ng-container [sbBlok]="content" />
+      } @else {
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h2 class="text-yellow-800 text-xl font-semibold mb-2">No content found</h2>
+        </div>
+      }
     </div>
   `,
 })
-export class CatchAllComponent {
-  private readonly route = inject(ActivatedRoute);
-  private readonly titleService = inject(Title);
+export class CatchAllComponent implements OnInit {
+  private readonly storyblok = inject(StoryblokService);
 
-  private readonly url = toSignal(this.route.url, { initialValue: [] });
+  /** Story data resolved from the route */
+  readonly storyInput = input<ISbStoryData | null>(null, { alias: 'story' });
 
-  private readonly urlSegments = computed(() => this.url().map((s) => s.path));
+  /** Writable signal linked to input - allows bridge updates */
+  readonly story = linkedSignal(() => this.storyInput());
 
-  protected readonly currentPath = computed(() => this.urlSegments().join('/'));
+  /** The story content (blok) to render */
+  readonly storyContent = computed(() => this.story()?.content as SbBlokData | undefined);
 
-  protected readonly pageTitle = computed(() => {
-    const segments = this.urlSegments();
-    if (segments.length === 0) return 'Page';
-    const lastSegment = segments[segments.length - 1];
-    return lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1);
-  });
-
-  constructor() {
-    effect(() => {
-      this.titleService.setTitle(`${this.pageTitle()} | Storyblok Angular`);
-    });
+  ngOnInit(): void {
+    // Enable the Storyblok Bridge for real-time editing in the Visual Editor
+    const currentStory = this.story();
+    if (currentStory) {
+      this.storyblok.enableLivePreview(currentStory.id, (updatedStory) => {
+        this.story.set(updatedStory);
+      });
+    }
   }
 }

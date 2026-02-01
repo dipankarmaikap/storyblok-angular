@@ -3,6 +3,11 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "paths": {
+      "angular-storyblok": [
+        "./dist/angular-storyblok"
+      ]
+    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -28,6 +33,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/angular-storyblok/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/angular-storyblok/tsconfig.spec.json"
     }
   ]
 }
