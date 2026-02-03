@@ -13,7 +13,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideStoryblok(
       {
-        accessToken: 'YiSZzi4L5blzN713TsG4Ogtt',
+        accessToken: 'nVjy7VdMK6ObZxyDfTWNwgtt',
       },
       withStoryblokComponents(storyblokComponents),
     ),

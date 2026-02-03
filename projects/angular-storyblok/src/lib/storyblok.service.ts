@@ -5,6 +5,7 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
   provideAppInitializer,
+  NgZone,
   type EnvironmentProviders,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -107,6 +108,7 @@ export function provideStoryblok(
 })
 export class StoryblokService {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly ngZone = inject(NgZone);
   private storyblokApi: ReturnType<typeof storyblokInit>['storyblokApi'] | null = null;
   private initialized = false;
 
@@ -187,7 +189,10 @@ export class StoryblokService {
     if (!this.isBrowser) {
       return;
     }
-    useStoryblokBridge(storyId, callback, options);
+    // Wrap callback in NgZone.run() to ensure Angular detects the change
+    // immediately and triggers change detection in the same frame.
+    // The Storyblok bridge runs outside Angular's zone.
+    useStoryblokBridge(storyId, (story) => this.ngZone.run(() => callback(story)), options);
   }
 }
 
