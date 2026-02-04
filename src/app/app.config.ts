@@ -3,7 +3,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideStoryblok, withStoryblokComponents } from 'angular-storyblok';
+import { provideStoryblok, withStoryblokComponents, withLivePreview } from 'angular-storyblok';
 import { storyblokComponents } from './storyblok.components';
 
 export const appConfig: ApplicationConfig = {
@@ -16,6 +16,7 @@ export const appConfig: ApplicationConfig = {
         accessToken: 'nVjy7VdMK6ObZxyDfTWNwgtt',
       },
       withStoryblokComponents(storyblokComponents),
+      withLivePreview(),
     ),
   ],
 };

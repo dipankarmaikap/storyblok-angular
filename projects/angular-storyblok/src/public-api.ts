@@ -4,7 +4,6 @@
 
 // Core service and provider
 export { StoryblokService, provideStoryblok, STORYBLOK_CONFIG } from './lib/storyblok.service';
-export type { StoryblokConfig, StoryblokApiOptions } from './lib/storyblok.service';
 
 // Component registry
 export {
@@ -14,8 +13,31 @@ export {
 } from './lib/storyblok-components';
 export type { StoryblokComponentsMap, StoryblokComponentLoader } from './lib/storyblok-components';
 
+// Live Preview feature (optional, tree-shakeable)
+export {
+  withLivePreview,
+  LivePreviewService,
+  LivePreviewNotEnabledError,
+  LIVE_PREVIEW_ENABLED,
+  LIVE_PREVIEW_CONFIG,
+} from './lib/live-preview';
+export type { LivePreviewConfig, LivePreviewCallback } from './lib/live-preview';
+
 // Directive
 export { SbBlokDirective } from './lib/sb-blok.directive';
+
+// Rich Text
+export { SbRichTextPipe, renderRichText } from './lib/richtext.pipe';
+export { SbRichTextComponent, type RichTextSegment } from './lib/richtext.component';
+
+// Re-export richtext types for convenience
+export {
+  richTextResolver,
+  BlockTypes,
+  MarkTypes,
+  type StoryblokRichTextNode,
+  type StoryblokRichTextOptions,
+} from '@storyblok/richtext';
 
 // Re-export useful types from @storyblok/js
 export type {

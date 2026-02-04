@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
-import { type SbBlokData } from '@storyblok/js';
+import { type SbBlokData } from 'angular-storyblok';
 
 export interface FeatureBlok extends SbBlokData {
   name?: string;
@@ -14,6 +14,6 @@ export interface FeatureBlok extends SbBlokData {
     </div>
   `,
 })
-export class Feature {
+export class FeatureComponent {
   readonly blok = input.required<FeatureBlok>();
 }

@@ -7,8 +7,8 @@ import { type StoryblokComponentsMap } from 'angular-storyblok';
  * The key should match the component name in Storyblok.
  */
 export const storyblokComponents: StoryblokComponentsMap = {
-  page: () => import('./components/page/page').then((m) => m.Page),
-  teaser: () => import('./components/teaser/teaser').then((m) => m.Teaser),
-  grid: () => import('./components/grid/grid').then((m) => m.Grid),
-  feature: () => import('./components/feature/feature').then((m) => m.Feature),
+  page: () => import('./components/page/page').then((m) => m.PageComponent),
+  teaser: () => import('./components/teaser/teaser').then((m) => m.TeaserComponent),
+  grid: () => import('./components/grid/grid').then((m) => m.GridComponent),
+  feature: () => import('./components/feature/feature').then((m) => m.FeatureComponent),
 };

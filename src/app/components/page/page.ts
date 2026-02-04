@@ -17,6 +17,6 @@ export interface PageBlok extends SbBlokData {
     </div>
   `,
 })
-export class Page {
+export class PageComponent {
   readonly blok = input.required<PageBlok>();
 }

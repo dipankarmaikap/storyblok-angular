@@ -11,6 +11,7 @@ import {
   type SbBlokData,
   SbBlokDirective,
   StoryblokService,
+  LivePreviewService,
 } from 'angular-storyblok';
 
 @Component({
@@ -34,6 +35,7 @@ import {
 })
 export class HomeComponent implements OnInit {
   private readonly storyblok = inject(StoryblokService);
+  private readonly livePreview = inject(LivePreviewService);
 
   readonly story = signal<ISbStoryData | null>(null);
   readonly loading = signal(true);
@@ -44,11 +46,9 @@ export class HomeComponent implements OnInit {
     this.story.set(data);
     this.loading.set(false);
 
-    // Enable bridge for Visual Editor
-    if (data) {
-      this.storyblok.enableLivePreview(data.id, (updatedStory) => {
-        this.story.set(updatedStory);
-      });
-    }
+    // Enable live preview for Visual Editor
+    this.livePreview.enable((updatedStory) => {
+      this.story.set(updatedStory);
+    });
   }
 }

@@ -11,7 +11,7 @@ import {
   type ISbStoryData,
   type SbBlokData,
   SbBlokDirective,
-  StoryblokService,
+  LivePreviewService,
 } from 'angular-storyblok';
 
 @Component({
@@ -32,7 +32,7 @@ import {
   `,
 })
 export class AboutComponent implements OnInit {
-  private readonly storyblok = inject(StoryblokService);
+  private readonly livePreview = inject(LivePreviewService);
 
   /** Story data from route resolver */
   readonly storyInput = input<ISbStoryData | null>(null, { alias: 'story' });
@@ -43,11 +43,9 @@ export class AboutComponent implements OnInit {
   readonly storyContent = computed(() => this.story()?.content as SbBlokData | undefined);
 
   ngOnInit(): void {
-    const currentStory = this.story();
-    if (currentStory) {
-      this.storyblok.enableLivePreview(currentStory.id, (updatedStory) => {
-        this.story.set(updatedStory);
-      });
-    }
+    // Enable live preview for Visual Editor
+    this.livePreview.enable((updatedStory) => {
+      this.story.set(updatedStory);
+    });
   }
 }

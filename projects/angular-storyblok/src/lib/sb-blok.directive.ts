@@ -62,9 +62,13 @@ export class SbBlokDirective {
   /** Track pending async load to handle race conditions */
   private pendingLoadId = 0;
 
+  /** Track if directive has been destroyed */
+  private isDestroyed = false;
+
   constructor() {
     // Cleanup on destroy
     this.destroyRef.onDestroy(() => {
+      this.isDestroyed = true;
       this.cleanup();
     });
 
@@ -77,6 +81,11 @@ export class SbBlokDirective {
   }
 
   private handleBlokChange(blok: SbBlokData | null | undefined): void {
+    // Skip if directive is destroyed
+    if (this.isDestroyed) {
+      return;
+    }
+
     // Handle null/undefined blok - cleanup and exit
     if (!blok?.component || !this.components) {
       this.cleanup();
@@ -131,6 +140,11 @@ export class SbBlokDirective {
         console.error(`[angular-storyblok] Failed to load component: ${componentName}`, error);
         return;
       }
+    }
+
+    // Check if directive was destroyed during async load (SSR cleanup)
+    if (this.isDestroyed) {
+      return;
     }
 
     // Check if this load is still relevant (handles race conditions)

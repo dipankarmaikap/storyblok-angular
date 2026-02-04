@@ -17,6 +17,6 @@ export interface GridBlok extends SbBlokData {
     </div>
   `,
 })
-export class Grid {
+export class GridComponent {
   readonly blok = input.required<GridBlok>();
 }

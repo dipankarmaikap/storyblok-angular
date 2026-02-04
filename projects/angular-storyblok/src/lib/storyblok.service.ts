@@ -9,27 +9,10 @@ import {
   type EnvironmentProviders,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import {
-  storyblokInit,
-  apiPlugin,
-  useStoryblokBridge,
-  type ISbStoryData,
-  type StoryblokBridgeConfigV2,
-  ISbConfig,
-} from '@storyblok/js';
 import { StoryblokFeature } from './storyblok-components';
-
-/**
- * Configuration options for Storyblok initialization.
- */
-export interface StoryblokConfig {
-  /** Access token for the Storyblok space */
-  accessToken: string;
-  /** Enable/disable the Storyblok Bridge. Defaults to true in browser. */
-  bridge?: boolean | StoryblokBridgeConfigV2;
-  useCustomApi?: boolean;
-  apiOptions?: ISbConfig;
-}
+import StoryblokClient, { type ISbConfig } from 'storyblok-js-client';
+import type { ISbStoryData } from '@storyblok/js';
+import { LIVE_PREVIEW_ENABLED } from './live-preview';
 
 /**
  * Options for fetching stories from the Storyblok API.
@@ -46,7 +29,7 @@ export interface StoryblokApiOptions {
 /**
  * Injection token for Storyblok configuration
  */
-export const STORYBLOK_CONFIG = new InjectionToken<StoryblokConfig>('STORYBLOK_CONFIG');
+export const STORYBLOK_CONFIG = new InjectionToken<ISbConfig>('STORYBLOK_CONFIG');
 
 /**
  * Provides Storyblok configuration at the application level.
@@ -74,7 +57,7 @@ export const STORYBLOK_CONFIG = new InjectionToken<StoryblokConfig>('STORYBLOK_C
  * ```
  */
 export function provideStoryblok(
-  config: StoryblokConfig,
+  config: ISbConfig,
   ...features: StoryblokFeature[]
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -109,7 +92,8 @@ export function provideStoryblok(
 export class StoryblokService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly ngZone = inject(NgZone);
-  private storyblokApi: ReturnType<typeof storyblokInit>['storyblokApi'] | null = null;
+  private readonly livePreviewEnabled = inject(LIVE_PREVIEW_ENABLED, { optional: true });
+  private storyblok: StoryblokClient | null = null;
   private initialized = false;
 
   /**
@@ -118,25 +102,12 @@ export class StoryblokService {
    * This is called automatically by `provideStoryblok()`.
    */
   /** @internal */
-  ɵinit(config: StoryblokConfig): void {
+  ɵinit(config: ISbConfig): void {
     if (this.initialized) {
       return;
     }
-
-    const bridgeEnabled =
-      typeof config.bridge === 'boolean'
-        ? config.bridge
-        : config.bridge !== undefined || this.isBrowser;
-
-    const { storyblokApi } = storyblokInit({
-      accessToken: config.accessToken,
-      use: config?.useCustomApi ? [] : [apiPlugin],
-      bridge: bridgeEnabled,
-      apiOptions: config.apiOptions,
-      bridgeUrl: typeof config.bridge === 'object' ? config.bridge.customParent : undefined,
-    });
-
-    this.storyblokApi = storyblokApi;
+    const storyblok = new StoryblokClient(config);
+    this.storyblok = storyblok;
     this.initialized = true;
   }
 
@@ -155,12 +126,12 @@ export class StoryblokService {
    * @returns The story data or null if not found
    */
   async getStory(slug: string, options: StoryblokApiOptions = {}): Promise<ISbStoryData | null> {
-    if (!this.storyblokApi) {
+    if (!this.storyblok) {
       console.error('Storyblok API not initialized. Call init() first.');
       return null;
     }
     try {
-      const response = await this.storyblokApi.get(`cdn/stories/${slug}`, {
+      const response = await this.storyblok.get(`cdn/stories/${slug}`, {
         version: options.version ?? 'draft',
         resolve_relations: options.resolve_relations,
         resolve_links: options.resolve_links,
@@ -174,27 +145,61 @@ export class StoryblokService {
   }
 
   /**
+   * @deprecated Use `LivePreviewService` from `withLivePreview()` feature instead.
+   *
    * Enable the Storyblok Bridge for real-time visual editing.
    * Only works in browser environment.
    *
-   * @param storyId - The story ID to listen for changes
    * @param callback - Function called when the story is updated in the Visual Editor
    * @param options - Bridge configuration options
+   *
+   * @example
+   * ```typescript
+   * // New recommended approach:
+   * // 1. Add withLivePreview() to your providers
+   * provideStoryblok(
+   *   { accessToken: 'your-token' },
+   *   withLivePreview()
+   * )
+   *
+   * // 2. Use LivePreviewService in your component
+   * private livePreview = inject(LivePreviewService);
+   * this.livePreview.enable((story) => this.story.set(story));
+   * ```
    */
-  enableLivePreview(
-    storyId: number,
+  async enableLivePreview(
     callback: (story: ISbStoryData) => void,
-    options?: StoryblokBridgeConfigV2,
-  ): void {
+    options?: { customParent?: string },
+  ): Promise<void> {
     if (!this.isBrowser) {
       return;
     }
+
+    // Warn about deprecation in development
+    if (typeof ngDevMode === 'undefined' || ngDevMode) {
+      console.warn(
+        '[angular-storyblok] enableLivePreview() is deprecated. ' +
+          'Use LivePreviewService with withLivePreview() feature instead. ' +
+          'See: https://github.com/storyblok/storyblok-angular#live-preview',
+      );
+    }
+
+    // Dynamically import the bridge
+    const { default: StoryblokBridge } = await import('@storyblok/preview-bridge');
+    const storyblokBridge = new StoryblokBridge({
+      customParent: options?.customParent,
+    });
+
     // Wrap callback in NgZone.run() to ensure Angular detects the change
-    // immediately and triggers change detection in the same frame.
-    // The Storyblok bridge runs outside Angular's zone.
-    useStoryblokBridge(storyId, (story) => this.ngZone.run(() => callback(story)), options);
+    storyblokBridge.on(['published', 'change', 'input'], (event) => {
+      if (event.action === 'input') {
+        this.ngZone.run(() => callback(event.story as unknown as ISbStoryData));
+      } else {
+        window.location.reload();
+      }
+    });
   }
 }
 
 // Re-export types from @storyblok/js for convenience
-export type { ISbStoryData, SbBlokData, StoryblokBridgeConfigV2 } from '@storyblok/js';
+export type { ISbStoryData, SbBlokData } from '@storyblok/js';
