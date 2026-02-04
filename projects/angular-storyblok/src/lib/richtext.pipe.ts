@@ -31,6 +31,7 @@ import {
  */
 @Pipe({
   name: 'sbRichText',
+  pure: true, // Only re-evaluate when input reference changes
 })
 export class SbRichTextPipe implements PipeTransform {
   private readonly sanitizer = inject(DomSanitizer);

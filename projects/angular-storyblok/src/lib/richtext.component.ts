@@ -57,7 +57,7 @@ export type RichTextSegment =
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SbBlokDirective],
   template: `
-    @for (segment of segments(); track $index) {
+    @for (segment of segments(); track trackSegment($index, segment)) {
       @if (segment.type === 'html') {
         <span [innerHTML]="segment.content"></span>
       } @else {
@@ -73,7 +73,7 @@ export class SbRichTextComponent {
   private readonly sanitizer = inject(DomSanitizer);
 
   /** The rich text document from Storyblok */
-  readonly doc = input.required<StoryblokRichTextNode<string> | null | undefined>();
+  readonly doc = input<StoryblokRichTextNode<string> | null>();
 
   /** Optional configuration for the rich text resolver */
   readonly options = input<StoryblokRichTextOptions<string>>();
@@ -85,6 +85,13 @@ export class SbRichTextComponent {
 
     return this.parseRichText(doc);
   });
+
+  /**
+   * Track function for @for loop - uses blok _uid for bloks, index for HTML
+   */
+  trackSegment(index: number, segment: RichTextSegment): string {
+    return segment.type === 'blok' ? (segment.blok._uid ?? `blok-${index}`) : `html-${index}`;
+  }
 
   /**
    * Sanitize HTML content for safe rendering

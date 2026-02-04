@@ -28,7 +28,7 @@ export { SbBlokDirective } from './lib/sb-blok.directive';
 
 // Rich Text
 export { SbRichTextPipe, renderRichText } from './lib/richtext.pipe';
-export { SbRichTextComponent, type RichTextSegment } from './lib/richtext.component';
+export { SbRichTextComponent } from './lib/richtext.component';
 
 // Re-export richtext types for convenience
 export {
